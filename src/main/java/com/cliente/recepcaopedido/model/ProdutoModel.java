@@ -5,32 +5,32 @@
  */
 package com.cliente.recepcaopedido.model;
 
+import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
-
 /**
  *
  * @author Jucelio
  */
 @Entity
-public class ProdutoModel {
-    
+public class ProdutoModel implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue
-    private int id;
+    private Integer id;
     private String nome;
     private float valor;
     private int quantidade;
     @ManyToOne
-    private PedidoModel pedido;
+    private PedidoModel pedido; 
     
-    public int getId() { 
+    public Integer getId() { 
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     

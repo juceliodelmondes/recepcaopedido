@@ -9,15 +9,12 @@ import com.cliente.recepcaopedido.interfaces.repository.PedidoRepository;
 import com.cliente.recepcaopedido.interfaces.repository.ProdutoRepository;
 import com.cliente.recepcaopedido.interfaces.service.PedidoServiceInterface;
 import com.cliente.recepcaopedido.model.PedidoModel;
+import com.cliente.recepcaopedido.model.ProdutoModel;
+import com.cliente.recepcaopedido.response.AdicionarPedidoResponse;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,25 +32,37 @@ public class PedidoService implements PedidoServiceInterface {
     ProdutoRepository produtoRepository;
 
     @Override
-    public String adicionarPedido(List<PedidoModel> pedido) {
-        if(pedido.size() >= 1 && pedido.size() <= 10) {
-            for(PedidoModel result : pedido) {
-                System.out.println("pedidos "+pedido.size());
-                System.out.println("Pedido atual "+result.getId());
-                String data = validarData(result.getDataCadastro());
-                System.out.println("DATA "+data);
-                if(data != null) { //data  válida ou nova data caso não o tenha
-                    PedidoModel pedidoConsulta = pedidoRepository.findByNumeroControle(result.getNumeroControle());
-                    if(pedidoConsulta == null) { //não encontrou nenhum pedido com o numero de controle especificado
-                        result.setDataCadastro(data);
-                        pedidoConsulta = pedidoRepository.save(result);
-                        System.out.println("Pedido salvo: "+pedidoConsulta.getId());
-                    }
-                    System.out.println("Pedido encontrado: "+pedidoConsulta.getId());
-                } else return "Data inválida: "+result.getDataCadastro()+" formato correto: (dd/MM/yyyy) - número controle: "+result.getNumeroControle();
-            }
-            return "fim";
-        } else return "Limite máximo de pedidos: 10! Total: "+pedido.size();
+    public AdicionarPedidoResponse adicionarPedido(List<PedidoModel> pedido) {
+        AdicionarPedidoResponse response = new AdicionarPedidoResponse();
+        try {
+            if(pedido.size() >= 1 && pedido.size() <= 10) {
+                for(PedidoModel result : pedido) {
+                    int quantidadeProdutos = 0;
+                    float valorTotalPedido = 0.00f;
+                    if(validarData(result.getDataCadastro()) != null) { //data  válida ou nova data caso não o tenha
+                        PedidoModel pedidoConsulta = pedidoRepository.findByNumeroControle(result.getNumeroControle());
+                        if(pedidoConsulta == null && result.getProdutos() != null) { //não encontrou nenhum pedido com o numero de controle especificado
+                            pedidoConsulta = pedidoRepository.save(result);
+                            for(ProdutoModel resultProduto : result.getProdutos()) {
+                                if(resultProduto.getQuantidade() == 0) resultProduto.setQuantidade(1);
+                                quantidadeProdutos+=resultProduto.getQuantidade();
+                                valorTotalPedido+=resultProduto.getValor()*resultProduto.getQuantidade();
+                                resultProduto.setPedido(result);
+                                produtoRepository.save(resultProduto);
+                            }
+                            if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido = valorTotalPedido-(valorTotalPedido*0.05f);
+                                else if(quantidadeProdutos >= 10) valorTotalPedido = valorTotalPedido-(valorTotalPedido*0.10f);
+                            pedidoConsulta.setValorTotal(valorTotalPedido);
+                            if(pedidoRepository.save(pedidoConsulta) != null) response.setMensagem("Pedido registrado!");
+                        }
+                    } else response.setMensagem("Data inválida: "+result.getDataCadastro()+" formato correto: (dd/MM/yyyy) - número controle: "+result.getNumeroControle());
+                }
+            } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
+        } catch (Exception er) {
+            response.setMensagem("Erro ao registrar o pedido!");
+            System.out.println(er.getMessage());
+        }
+        return response;
     }
     
     /**

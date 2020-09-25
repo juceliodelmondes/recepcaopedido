@@ -5,6 +5,7 @@
  */
 package com.cliente.recepcaopedido.model;
 
+import java.io.Serializable;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -18,24 +19,26 @@ import javax.persistence.OneToMany;
  * @author Jucelio
  */
 @Entity
-public class PedidoModel {
-    
+public class PedidoModel implements Serializable  {
+    private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue
-    private int id;
+    private Integer id;
+    @Column(length = 10)
     private String dataCadastro;
     @Column(length = 10)
     private int numeroControle;
     @Column(length = 10)
     private int codigoCliente;
-    @OneToMany
+    private float valorTotal;
+    @OneToMany(mappedBy = "pedido")
     private List<ProdutoModel> produtos;
     
-    public int getId() {
+    public Integer getId() {
         return this.id;
     }
     
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     
@@ -63,11 +66,19 @@ public class PedidoModel {
         this.codigoCliente = codigoCliente;
     }
     
+    public float getValorTotal() {
+        return this.valorTotal;
+    }
+    
+    public void setValorTotal(float valorTotal) {
+        this.valorTotal = valorTotal;
+    }
+    
     public List<ProdutoModel> getProdutos() {
         return this.produtos;
     }
     
     public void setProdutos(List<ProdutoModel> produtos) {
         this.produtos = produtos;
-    }  
+    }
 }
