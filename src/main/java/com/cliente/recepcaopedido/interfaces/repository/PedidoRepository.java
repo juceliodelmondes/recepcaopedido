@@ -13,5 +13,5 @@ import org.springframework.data.repository.CrudRepository;
  * @author Jucelio
  */
 public interface PedidoRepository extends CrudRepository<PedidoModel, Integer>{
-    
+    public PedidoModel findByNumeroControle(int numeroControle);
 }
