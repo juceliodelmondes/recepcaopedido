@@ -6,6 +6,7 @@
 package com.cliente.recepcaopedido.model;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
@@ -17,9 +18,11 @@ import javax.persistence.ManyToOne;
 public class ProdutoModel {
     
     @Id
+    @GeneratedValue
     private int id;
     private String nome;
     private float valor;
+    private int quantidade;
     @ManyToOne
     private PedidoModel pedido;
     
@@ -45,6 +48,14 @@ public class ProdutoModel {
     
     public void setValor(float valor) {
         this.valor = valor;
+    }
+    
+    public int getQuantidade() {
+        return this.quantidade;
+    }
+    
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
     }
     
     public PedidoModel getPedido () {

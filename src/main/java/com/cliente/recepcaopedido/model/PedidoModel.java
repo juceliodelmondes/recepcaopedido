@@ -8,6 +8,7 @@ package com.cliente.recepcaopedido.model;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 
@@ -20,10 +21,13 @@ import javax.persistence.OneToMany;
 public class PedidoModel {
     
     @Id
+    @GeneratedValue
     private int id;
     private String dataCadastro;
     @Column(length = 10)
     private int numeroControle;
+    @Column(length = 10)
+    private int codigoCliente;
     @OneToMany
     private List<ProdutoModel> produtos;
     
@@ -49,6 +53,14 @@ public class PedidoModel {
     
     public void setNumeroControle(int numeroControle) {
         this.numeroControle = numeroControle;
+    }
+    
+    public int getCodigoCliente() {
+        return this.codigoCliente;
+    }
+    
+    public void setCodigoCliente(int codigoCliente) {
+        this.codigoCliente = codigoCliente;
     }
     
     public List<ProdutoModel> getProdutos() {
