@@ -13,6 +13,7 @@ import com.cliente.recepcaopedido.model.ProdutoModel;
 import com.cliente.recepcaopedido.response.AdicionarPedidoResponse;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,33 +37,47 @@ public class PedidoService implements PedidoServiceInterface {
         AdicionarPedidoResponse response = new AdicionarPedidoResponse();
         try {
             if(pedido.size() >= 1 && pedido.size() <= 10) {
-                for(PedidoModel result : pedido) {
+                pedidosValidos(pedido).forEach(result -> {
                     int quantidadeProdutos = 0;
                     float valorTotalPedido = 0.00f;
-                    if(validarData(result.getDataCadastro()) != null) { //data  válida ou nova data caso não o tenha
-                        PedidoModel pedidoConsulta = pedidoRepository.findByNumeroControle(result.getNumeroControle());
-                        if(pedidoConsulta == null && result.getProdutos() != null) { //não encontrou nenhum pedido com o numero de controle especificado
-                            pedidoConsulta = pedidoRepository.save(result);
-                            for(ProdutoModel resultProduto : result.getProdutos()) {
-                                if(resultProduto.getQuantidade() == 0) resultProduto.setQuantidade(1);
-                                quantidadeProdutos+=resultProduto.getQuantidade();
-                                valorTotalPedido+=resultProduto.getValor()*resultProduto.getQuantidade();
-                                resultProduto.setPedido(result);
-                                produtoRepository.save(resultProduto);
-                            }
-                            if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido = valorTotalPedido-(valorTotalPedido*0.05f);
-                                else if(quantidadeProdutos >= 10) valorTotalPedido = valorTotalPedido-(valorTotalPedido*0.10f);
-                            pedidoConsulta.setValorTotal(valorTotalPedido);
-                            if(pedidoRepository.save(pedidoConsulta) != null) response.setMensagem("Pedido registrado!");
-                        }
-                    } else response.setMensagem("Data inválida: "+result.getDataCadastro()+" formato correto: (dd/MM/yyyy) - número controle: "+result.getNumeroControle());
-                }
+                    pedidoRepository.save(result);
+                    for(ProdutoModel resultProduto : result.getProdutos()) {
+                        quantidadeProdutos+=resultProduto.getQuantidade();
+                        valorTotalPedido+=resultProduto.getValor()*resultProduto.getQuantidade();
+                        resultProduto.setPedido(result);
+                        produtoRepository.save(resultProduto);
+                    }
+                    if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido-=valorTotalPedido*0.05f;
+                        else if(quantidadeProdutos >= 10) valorTotalPedido -=valorTotalPedido*0.10f;
+                    result.setValorTotal(valorTotalPedido);
+                    if(pedidoRepository.save(result) != null) response.setMensagem("Pedido registrado!");
+                });
+                    
             } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
         } catch (Exception er) {
             response.setMensagem("Erro ao registrar o pedido!");
-            System.out.println(er.getMessage());
+            er.printStackTrace();
         }
         return response;
+    }
+    
+    /**
+     * Retorna uma lista de pedidos válidos de acordo com as regras 
+     * @param pedidos
+     * @return 
+     */
+    private List<PedidoModel> pedidosValidos(List<PedidoModel> pedidos) {
+        List<PedidoModel> pedidosValidos = new ArrayList<>();
+        pedidos.forEach(pedidosObj -> {
+            try {
+                if(validarData(pedidosObj.getDataCadastro()) != null && pedidoRepository.findByNumeroControle(pedidosObj.getNumeroControle()) == null &&
+                    pedidosObj.getProdutos() != null) pedidosValidos.add(pedidosObj);
+            } catch (Exception er) {
+                er.printStackTrace();
+            }
+            
+        });
+        return pedidosValidos;
     }
     
     /**
