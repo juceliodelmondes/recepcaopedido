@@ -35,18 +35,21 @@ public class PedidoService implements PedidoServiceInterface {
     @Override
     public AdicionarPedidoResponse adicionarPedido(List<PedidoModel> pedido) {
         AdicionarPedidoResponse response = new AdicionarPedidoResponse();
+        List<Integer> pedidosRegistrados = new ArrayList<>();
         if(pedido.size() >= 1 && pedido.size() <= 10) {
             this.pedidosValidos(pedido).forEach(result -> {
-                try {
-                    pedidoRepository.save(result);
-                    this.salvarProdutos(result);
-                    response.setMensagem("Pedido registrado!");
-                } catch(Exception er) {
-                    er.printStackTrace();
+                if(produtosValidos(result.getProdutos())) {
+                    try {
+                        pedidoRepository.save(result);
+                        this.salvarProdutos(result);
+                        pedidosRegistrados.add(result.getNumeroControle());
+                    } catch(Exception er) {
+                        er.printStackTrace();
+                    }
                 }
             });
-
         } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
+        response.setPedidosCadastrados(pedidosRegistrados);
         return response;
     }
     
@@ -59,8 +62,8 @@ public class PedidoService implements PedidoServiceInterface {
         List<PedidoModel> pedidosValidos = new ArrayList<>();
         pedidos.forEach(pedidosObj -> {
             try {
-                if(validarData(pedidosObj.getDataCadastro()) != null && pedidoRepository.findByNumeroControle(pedidosObj.getNumeroControle()) == null &&
-                    pedidosObj.getProdutos() != null) pedidosValidos.add(pedidosObj);
+                if(validarData(pedidosObj.getDataCadastro()) != null && pedidosObj.getNumeroControle() != 0 &&
+                        pedidoRepository.findByNumeroControle(pedidosObj.getNumeroControle()) == null && pedidosObj.getProdutos() != null) pedidosValidos.add(pedidosObj);
             } catch (Exception er) {
                 er.printStackTrace();
             }
@@ -68,7 +71,30 @@ public class PedidoService implements PedidoServiceInterface {
         });
         return pedidosValidos;
     }
-        
+    
+    /**
+     * Verifica se os produtos são válidos
+     * Todos os produtos precisam ser válidos para gravar um pedido
+     * @param produtos
+     * @return 
+     */
+    private boolean produtosValidos(List<ProdutoModel> produtos) {
+        boolean retorno = true;
+        for(ProdutoModel produtoAtual : produtos) {
+            if(produtoAtual.getNome() == null || produtoAtual.getValor() <= 0) {
+                retorno = false;
+                break; 
+            }
+        }
+        return retorno;
+    }
+   
+    /**
+     * Salva os produtos de um determinado pedido
+     * @param pedido
+     * @return
+     * @throws Exception 
+     */
     private PedidoModel salvarProdutos(PedidoModel pedido) throws Exception {
         int quantidadeProdutos = 0;
         float valorTotalPedido = 0.00f;
