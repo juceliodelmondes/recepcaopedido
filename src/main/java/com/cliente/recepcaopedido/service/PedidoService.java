@@ -11,6 +11,7 @@ import com.cliente.recepcaopedido.interfaces.service.PedidoServiceInterface;
 import com.cliente.recepcaopedido.model.PedidoModel;
 import com.cliente.recepcaopedido.model.ProdutoModel;
 import com.cliente.recepcaopedido.response.AdicionarPedidoResponse;
+import com.cliente.recepcaopedido.request.PesquisarPedidoRequest;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -30,28 +31,7 @@ public class PedidoService implements PedidoServiceInterface {
     PedidoRepository pedidoRepository;
     
     @Autowired
-    ProdutoRepository produtoRepository;
-
-    @Override
-    public AdicionarPedidoResponse adicionarPedido(List<PedidoModel> pedido) {
-        AdicionarPedidoResponse response = new AdicionarPedidoResponse();
-        List<Integer> pedidosRegistrados = new ArrayList<>();
-        if(pedido.size() >= 1 && pedido.size() <= 10) {
-            this.pedidosValidos(pedido).forEach(result -> {
-                if(produtosValidos(result.getProdutos())) {
-                    try {
-                        pedidoRepository.save(result);
-                        this.salvarProdutos(result);
-                        pedidosRegistrados.add(result.getNumeroControle());
-                    } catch(Exception er) {
-                        er.printStackTrace();
-                    }
-                }
-            });
-        } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
-        response.setPedidosCadastrados(pedidosRegistrados);
-        return response;
-    }
+    ProdutoRepository produtoRepository;    
     
     /**
      * Retorna uma lista de pedidos válidos de acordo com as regras 
@@ -133,5 +113,65 @@ public class PedidoService implements PedidoServiceInterface {
             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
             return dateFormat.format(dataObj.getTime());
         }
+    }
+    
+    //Métodos abstratos
+    
+    @Override
+    public AdicionarPedidoResponse adicionarPedido(List<PedidoModel> pedido) {
+        AdicionarPedidoResponse response = new AdicionarPedidoResponse();
+        List<Integer> pedidosRegistrados = new ArrayList<>();
+        if(pedido.size() >= 1 && pedido.size() <= 10) {
+            this.pedidosValidos(pedido).forEach(result -> {
+                if(produtosValidos(result.getProdutos())) {
+                    try {
+                        result = pedidoRepository.save(result);
+                        this.salvarProdutos(result);
+                        pedidosRegistrados.add(result.getNumeroControle());
+                    } catch(Exception er) {
+                        er.printStackTrace();
+                    }
+                }
+            });
+        } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
+        response.setPedidosCadastrados(pedidosRegistrados);
+        return response;
+    }    
+    
+    @Override
+    public List<PedidoModel> pesquisarPedido(PesquisarPedidoRequest pedido) {
+        List<PedidoModel> pedidos = new ArrayList<>();
+        try {
+            switch(pedido.getAtributo()) {
+                case "id":
+                    PedidoModel result = pedidoRepository.findById(Integer.parseInt(pedido.getValor())).get();
+                    if(result != null) pedidos.add(result);
+                    break;
+                case "data cadastro":
+                    pedidos = pedidoRepository.findAllByDataCadastro(pedido.getValor());
+                    break;
+                case "numero controle":
+                    PedidoModel resultn = pedidoRepository.findByNumeroControle(Integer.parseInt(pedido.getValor()));
+                    if(resultn != null) pedidos.add(resultn);
+                    break;
+                case "codigo cliente":
+                    pedidos = pedidoRepository.findAllByCodigoCliente(Integer.parseInt(pedido.getValor()));
+                    break;
+                case "valor total": 
+                    pedidos = pedidoRepository.findAllByValorTotal(Float.parseFloat(pedido.getValor()));
+                    break;
+                default:
+                    
+                    break;
+            }
+            pedidos.forEach(pedidoAtual -> {
+                pedidoAtual.getProdutos().forEach(produtoAtual -> {
+                    produtoAtual.setPedido(null); //evita loop de tabela com relacionamento bidirecional
+                });
+            });
+        } catch(Exception er) {
+            er.printStackTrace();
+        }
+        return pedidos;
     }
 }
