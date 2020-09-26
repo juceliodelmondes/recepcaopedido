@@ -21,12 +21,13 @@ public class PedidoController {
     
     @Autowired
     PedidoServiceInterface pedidoInterface;
+    
     /**
      * Adiciona novos pedidos
      * @param pedido
      * @return 
      */
-    @PostMapping("/adicionar")
+    @PostMapping(value = "/adicionar", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public AdicionarPedidoResponse adicionar(@RequestBody List<PedidoModel> pedido) {
         return pedidoInterface.adicionarPedido(pedido);
     }

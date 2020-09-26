@@ -117,6 +117,11 @@ public class PedidoService implements PedidoServiceInterface {
     
     //Métodos abstratos
     
+    /**
+     * Adiciona um novo pedido no banco de dados (solicitação do cliente)
+     * @param pedido
+     * @return 
+     */
     @Override
     public AdicionarPedidoResponse adicionarPedido(List<PedidoModel> pedido) {
         AdicionarPedidoResponse response = new AdicionarPedidoResponse();
@@ -138,26 +143,43 @@ public class PedidoService implements PedidoServiceInterface {
         return response;
     }    
     
+    /**
+     * Pesquisa um determinado pedido de acordo com o atributo e valor
+     * @param pedido objeto PesquisarPedidoRequest com parâmetros: atributo e valor
+     * Valores possíveis de atributos:
+     * "id",
+     * "data cadastro",
+     * "numero controle",
+     * "codigo cliente",
+     * "valor total"
+     * 
+     * Exemplo de parâmetro JSON:
+     * {
+     *      "atributo" : "id",
+     *      "valor" : 5
+     * }
+     * @return lista de pedidos
+     */    
     @Override
     public List<PedidoModel> pesquisarPedido(PesquisarPedidoRequest pedido) {
         List<PedidoModel> pedidos = new ArrayList<>();
         try {
             switch(pedido.getAtributo()) {
-                case "id":
+                case PesquisarPedidoRequest.ID:
                     PedidoModel result = pedidoRepository.findById(Integer.parseInt(pedido.getValor())).get();
                     if(result != null) pedidos.add(result);
                     break;
-                case "data cadastro":
+                case PesquisarPedidoRequest.DATA_CADASTRO:
                     pedidos = pedidoRepository.findAllByDataCadastro(pedido.getValor());
                     break;
-                case "numero controle":
+                case PesquisarPedidoRequest.NUMERO_CONTROLE:
                     PedidoModel resultn = pedidoRepository.findByNumeroControle(Integer.parseInt(pedido.getValor()));
                     if(resultn != null) pedidos.add(resultn);
                     break;
-                case "codigo cliente":
+                case PesquisarPedidoRequest.CODIGO_CLIENTE:
                     pedidos = pedidoRepository.findAllByCodigoCliente(Integer.parseInt(pedido.getValor()));
                     break;
-                case "valor total": 
+                case PesquisarPedidoRequest.VALOR_TOTAL: 
                     pedidos = pedidoRepository.findAllByValorTotal(Float.parseFloat(pedido.getValor()));
                     break;
                 default:
