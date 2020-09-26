@@ -8,6 +8,7 @@ package com.cliente.recepcaopedido.service;
 import com.cliente.recepcaopedido.interfaces.repository.PedidoRepository;
 import com.cliente.recepcaopedido.interfaces.repository.ProdutoRepository;
 import com.cliente.recepcaopedido.interfaces.service.PedidoServiceInterface;
+import com.cliente.recepcaopedido.interfaces.service.ProdutoServiceInterface;
 import com.cliente.recepcaopedido.model.PedidoModel;
 import com.cliente.recepcaopedido.model.ProdutoModel;
 import com.cliente.recepcaopedido.response.AdicionarPedidoResponse;
@@ -31,7 +32,7 @@ public class PedidoService implements PedidoServiceInterface {
     PedidoRepository pedidoRepository;
     
     @Autowired
-    ProdutoRepository produtoRepository;    
+    ProdutoServiceInterface produtoInterface;
     
     /**
      * Retorna uma lista de pedidos válidos de acordo com as regras 
@@ -52,44 +53,7 @@ public class PedidoService implements PedidoServiceInterface {
         return pedidosValidos;
     }
     
-    /**
-     * Verifica se os produtos são válidos
-     * Todos os produtos precisam ser válidos para gravar um pedido
-     * @param produtos
-     * @return 
-     */
-    private boolean produtosValidos(List<ProdutoModel> produtos) {
-        boolean retorno = true;
-        for(ProdutoModel produtoAtual : produtos) {
-            if(produtoAtual.getNome() == null || produtoAtual.getValor() <= 0) {
-                retorno = false;
-                break; 
-            }
-        }
-        return retorno;
-    }
    
-    /**
-     * Salva os produtos de um determinado pedido
-     * @param pedido
-     * @return
-     * @throws Exception 
-     */
-    private PedidoModel salvarProdutos(PedidoModel pedido) throws Exception {
-        int quantidadeProdutos = 0;
-        float valorTotalPedido = 0.00f;
-        for(ProdutoModel produtoAtual : pedido.getProdutos()) {
-            if(produtoAtual.getQuantidade() == 0) produtoAtual.setQuantidade(1);
-            quantidadeProdutos+=produtoAtual.getQuantidade();
-            valorTotalPedido+=produtoAtual.getValor()*produtoAtual.getQuantidade();
-            produtoAtual.setPedido(pedido);
-            produtoRepository.save(produtoAtual);
-        }
-        if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido-=valorTotalPedido*0.05f;
-            else if(quantidadeProdutos >= 10) valorTotalPedido -=valorTotalPedido*0.10f;
-        pedido.setValorTotal(valorTotalPedido);
-        return pedidoRepository.save(pedido);
-    }
     
     /**
      * Valida uma data
@@ -128,10 +92,10 @@ public class PedidoService implements PedidoServiceInterface {
         List<Integer> pedidosRegistrados = new ArrayList<>();
         if(pedido.size() >= 1 && pedido.size() <= 10) {
             this.pedidosValidos(pedido).forEach(result -> {
-                if(produtosValidos(result.getProdutos())) {
+                if(produtoInterface.validaProdutos(result.getProdutos())) {
                     try {
                         result = pedidoRepository.save(result);
-                        this.salvarProdutos(result);
+                        produtoInterface.salvarProdutos(result);
                         pedidosRegistrados.add(result.getNumeroControle());
                     } catch(Exception er) {
                         er.printStackTrace();
@@ -158,6 +122,7 @@ public class PedidoService implements PedidoServiceInterface {
      *      "atributo" : "id",
      *      "valor" : 5
      * }
+     * 
      * @return lista de pedidos
      */    
     @Override
