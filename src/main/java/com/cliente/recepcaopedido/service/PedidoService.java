@@ -6,11 +6,9 @@
 package com.cliente.recepcaopedido.service;
 
 import com.cliente.recepcaopedido.interfaces.repository.PedidoRepository;
-import com.cliente.recepcaopedido.interfaces.repository.ProdutoRepository;
 import com.cliente.recepcaopedido.interfaces.service.PedidoServiceInterface;
 import com.cliente.recepcaopedido.interfaces.service.ProdutoServiceInterface;
 import com.cliente.recepcaopedido.model.PedidoModel;
-import com.cliente.recepcaopedido.model.ProdutoModel;
 import com.cliente.recepcaopedido.response.AdicionarPedidoResponse;
 import com.cliente.recepcaopedido.request.PesquisarPedidoRequest;
 import java.text.DateFormat;

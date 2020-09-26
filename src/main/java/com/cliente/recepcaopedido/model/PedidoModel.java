@@ -24,12 +24,13 @@ public class PedidoModel implements Serializable  {
     @Id
     @GeneratedValue
     private Integer id;
-    @Column(length = 10)
+    @Column(length = 10, nullable = false)
     private String dataCadastro;
-    @Column(length = 10)
+    @Column(length = 10, nullable = false)
     private int numeroControle;
-    @Column(length = 10)
+    @Column(length = 10, nullable = false)
     private int codigoCliente;
+    @Column(nullable = false)
     private float valorTotal;
     @OneToMany(mappedBy = "pedido")
     private List<ProdutoModel> produtos;
