@@ -35,29 +35,18 @@ public class PedidoService implements PedidoServiceInterface {
     @Override
     public AdicionarPedidoResponse adicionarPedido(List<PedidoModel> pedido) {
         AdicionarPedidoResponse response = new AdicionarPedidoResponse();
-        try {
-            if(pedido.size() >= 1 && pedido.size() <= 10) {
-                pedidosValidos(pedido).forEach(result -> {
-                    int quantidadeProdutos = 0;
-                    float valorTotalPedido = 0.00f;
+        if(pedido.size() >= 1 && pedido.size() <= 10) {
+            this.pedidosValidos(pedido).forEach(result -> {
+                try {
                     pedidoRepository.save(result);
-                    for(ProdutoModel resultProduto : result.getProdutos()) {
-                        quantidadeProdutos+=resultProduto.getQuantidade();
-                        valorTotalPedido+=resultProduto.getValor()*resultProduto.getQuantidade();
-                        resultProduto.setPedido(result);
-                        produtoRepository.save(resultProduto);
-                    }
-                    if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido-=valorTotalPedido*0.05f;
-                        else if(quantidadeProdutos >= 10) valorTotalPedido -=valorTotalPedido*0.10f;
-                    result.setValorTotal(valorTotalPedido);
-                    if(pedidoRepository.save(result) != null) response.setMensagem("Pedido registrado!");
-                });
-                    
-            } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
-        } catch (Exception er) {
-            response.setMensagem("Erro ao registrar o pedido!");
-            er.printStackTrace();
-        }
+                    this.salvarProdutos(result);
+                    response.setMensagem("Pedido registrado!");
+                } catch(Exception er) {
+                    er.printStackTrace();
+                }
+            });
+
+        } else response.setMensagem("Limite máximo de pedidos: 10! Total: "+pedido.size());
         return response;
     }
     
@@ -78,6 +67,22 @@ public class PedidoService implements PedidoServiceInterface {
             
         });
         return pedidosValidos;
+    }
+        
+    private PedidoModel salvarProdutos(PedidoModel pedido) throws Exception {
+        int quantidadeProdutos = 0;
+        float valorTotalPedido = 0.00f;
+        for(ProdutoModel produtoAtual : pedido.getProdutos()) {
+            if(produtoAtual.getQuantidade() == 0) produtoAtual.setQuantidade(1);
+            quantidadeProdutos+=produtoAtual.getQuantidade();
+            valorTotalPedido+=produtoAtual.getValor()*produtoAtual.getQuantidade();
+            produtoAtual.setPedido(pedido);
+            produtoRepository.save(produtoAtual);
+        }
+        if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido-=valorTotalPedido*0.05f;
+            else if(quantidadeProdutos >= 10) valorTotalPedido -=valorTotalPedido*0.10f;
+        pedido.setValorTotal(valorTotalPedido);
+        return pedidoRepository.save(pedido);
     }
     
     /**
