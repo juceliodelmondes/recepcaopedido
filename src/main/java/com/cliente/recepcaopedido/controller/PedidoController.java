@@ -34,6 +34,16 @@ public class PedidoController {
     }
     
     /**
+     * Adiciona novos pedidos por XML
+     * @param pedido
+     * @return  
+     */
+    @PostMapping(value = "/adicionar", consumes = MediaType.APPLICATION_XML_VALUE, produces = MediaType.APPLICATION_XML_VALUE)
+    public AdicionarPedidoResponse XMLadicionar(@RequestBody List<PedidoModel> pedido) {
+        return pedidoInterface.adicionarPedido(pedido);
+    }
+    
+    /**
      * Pesquisa por pedidos no banco de dados e retorna em JSON
      * @param pesquisa objeto em JSON
      * @return JSON
