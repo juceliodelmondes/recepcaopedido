@@ -5,6 +5,7 @@ import com.cliente.recepcaopedido.interfaces.repository.ProdutoRepository;
 import com.cliente.recepcaopedido.interfaces.service.ProdutoServiceInterface;
 import com.cliente.recepcaopedido.model.PedidoModel;
 import com.cliente.recepcaopedido.model.ProdutoModel;
+import java.math.BigDecimal;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class ProdutoService implements ProdutoServiceInterface {
     public boolean validaProdutos(List<ProdutoModel> produtos) {
         boolean retorno = true;
         for(ProdutoModel produtoAtual : produtos) {
-            if(produtoAtual.getNome() == null || produtoAtual.getValor() <= 0) {
+            if(produtoAtual.getNome() == null || produtoAtual.getValor().compareTo(new BigDecimal(0)) != 1) {
                 retorno = false;
                 break; 
             }
@@ -51,16 +52,16 @@ public class ProdutoService implements ProdutoServiceInterface {
     @Override
     public PedidoModel salvarProdutos(PedidoModel pedido) throws Exception {
         int quantidadeProdutos = 0;
-        float valorTotalPedido = 0.00f;
+        BigDecimal valorTotalPedido = new BigDecimal("0.00");
         for(ProdutoModel produtoAtual : pedido.getProdutos()) {
             if(produtoAtual.getQuantidade() == 0) produtoAtual.setQuantidade(1);
             quantidadeProdutos+=produtoAtual.getQuantidade();
-            valorTotalPedido+=produtoAtual.getValor()*produtoAtual.getQuantidade();
+            valorTotalPedido = (produtoAtual.getValor().multiply(new BigDecimal(produtoAtual.getQuantidade())));
             produtoAtual.setPedido(pedido);
             produtoRepository.save(produtoAtual);
         }
-        if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido-=valorTotalPedido*0.05f;
-            else if(quantidadeProdutos >= 10) valorTotalPedido -=valorTotalPedido*0.10f;
+        if(quantidadeProdutos >= 5 && quantidadeProdutos <= 9) valorTotalPedido = valorTotalPedido.subtract(valorTotalPedido.multiply(new BigDecimal("0.05")));
+            else if(quantidadeProdutos >= 10) valorTotalPedido = valorTotalPedido.subtract(valorTotalPedido.multiply(new BigDecimal("0.10")));
         pedido.setValorTotal(valorTotalPedido);
         return pedidoRepository.save(pedido);
     }

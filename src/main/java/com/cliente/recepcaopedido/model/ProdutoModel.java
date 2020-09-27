@@ -1,6 +1,7 @@
 package com.cliente.recepcaopedido.model;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -18,8 +19,7 @@ public class ProdutoModel implements Serializable {
     private Integer id;
     @Column(nullable = false)
     private String nome;
-    @Column(nullable = false)
-    private float valor;
+    private BigDecimal valor;
     @Column(nullable = false)
     private int quantidade;
     @ManyToOne
@@ -41,11 +41,11 @@ public class ProdutoModel implements Serializable {
         this.nome = nome;
     }
     
-    public float getValor() {
+    public BigDecimal getValor() {
         return this.valor;
     }
     
-    public void setValor(float valor) {
+    public void setValor(BigDecimal valor) {
         this.valor = valor;
     }
     

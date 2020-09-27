@@ -1,6 +1,11 @@
 package com.cliente.recepcaopedido.model;
 
+/*
+Pesquisando pelo valor total
+*/
+import com.cliente.recepcaopedido.model.ProdutoModel;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -25,8 +30,7 @@ public class PedidoModel implements Serializable  {
     private int numeroControle;
     @Column(length = 10, nullable = false)
     private int codigoCliente;
-    @Column(nullable = false)
-    private float valorTotal;
+    BigDecimal valorTotal;
     @OneToMany(mappedBy = "pedido")
     private List<ProdutoModel> produtos;
     
@@ -62,11 +66,11 @@ public class PedidoModel implements Serializable  {
         this.codigoCliente = codigoCliente;
     }
     
-    public float getValorTotal() {
+    public BigDecimal getValorTotal() {
         return this.valorTotal;
     }
     
-    public void setValorTotal(float valorTotal) {
+    public void setValorTotal(BigDecimal valorTotal) {
         this.valorTotal = valorTotal;
     }
     

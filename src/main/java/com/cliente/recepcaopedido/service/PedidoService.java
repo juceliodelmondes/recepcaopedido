@@ -6,6 +6,7 @@ import com.cliente.recepcaopedido.interfaces.service.ProdutoServiceInterface;
 import com.cliente.recepcaopedido.model.PedidoModel;
 import com.cliente.recepcaopedido.response.AdicionarPedidoResponse;
 import com.cliente.recepcaopedido.request.PesquisarPedidoRequest;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -138,7 +139,7 @@ public class PedidoService implements PedidoServiceInterface {
                     pedidos = pedidoRepository.findAllByCodigoCliente(Integer.parseInt(pedido.getValor()));
                     break;
                 case PesquisarPedidoRequest.VALOR_TOTAL: 
-                    pedidos = pedidoRepository.findAllByValorTotal(Float.parseFloat(pedido.getValor()));
+                    pedidos = pedidoRepository.findAllByValorTotal(new BigDecimal(pedido.getValor()));
                     break;
                 default:
                     

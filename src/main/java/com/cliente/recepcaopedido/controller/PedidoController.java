@@ -3,6 +3,7 @@
 */
 package com.cliente.recepcaopedido.controller;
 
+import com.cliente.recepcaopedido.interfaces.repository.PedidoRepository;
 import com.cliente.recepcaopedido.model.PedidoModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +32,7 @@ public class PedidoController {
     public AdicionarPedidoResponse adicionar(@RequestBody List<PedidoModel> pedido) {
         return pedidoInterface.adicionarPedido(pedido);
     }
+    
     /**
      * Pesquisa por pedidos no banco de dados e retorna em JSON
      * @param pesquisa objeto em JSON
